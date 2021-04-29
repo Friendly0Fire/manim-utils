@@ -3,21 +3,35 @@ import numpy as np
 from typing import NamedTuple, Union
 from manim_utils.math import *
 import shapely
+import random
 
 
 class CSegment(NamedTuple):
     p1: np.array
     p2: np.array
 
+    def dir(self):
+        return normalize(self.p2 - self.p1)
+
 
 class CLine(NamedTuple):
     p1: np.array
     p2: np.array
 
+    def dir(self):
+        return normalize(self.p2 - self.p1)
+
 
 class CRay(NamedTuple):
     o: np.array
     d: np.array
+
+    def dir(self):
+        return normalize(self.d)
+
+
+CLinear = Union[CSegment, CLine, CRay]
+Vector = np.array
 
 
 def linear_intersection(
@@ -67,3 +81,25 @@ def point_inside_polygon(point, vertices):
     point = shapely.geometry.Point(*point[0:2])
     polygon = shapely.geometry.polygon.Polygon([(v[0], v[1]) for v in vertices])
     return polygon.contains(point)
+
+
+def reflect_from_surface(l: CLinear, vec):
+    vec = normalize(vec)
+    n = perp(l.dir())
+    if np.dot(n, vec) > 0:
+        n = -n
+    return vec - 2 * np.dot(n, vec) * n
+
+
+def normal_from_surface(l: CLinear, vec=None):
+    n = perp(l.dir())
+    if vec is not None and np.dot(n, vec) > 0:
+        n = -n
+    return n
+
+
+def random_walk(direction: Vector, max_angle=TAU / 4, movement_range=[0.5, 1]):
+    turnAngle = random.uniform(-max_angle, max_angle)
+    movementLength = random.uniform(*movement_range)
+    movement = rotate_vector(direction, turnAngle) * movementLength
+    return movement

@@ -1,0 +1,3 @@
+[submodule "video-splitter"]
+	path = video-splitter
+	url = git@github.com:Friendly0Fire/video-splitter.git
